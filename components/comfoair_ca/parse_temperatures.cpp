@@ -38,10 +38,14 @@ namespace esphome
         {
           component.supply_air_temperature->publish_state(decode_temperature(component.payload_byte(1)));
         }
+        // COMFOAIR_CLIMATE_TEMP_FIX_V1: keep Climate in sync with measured return air.
+        const float status_return_air = decode_temperature(component.payload_byte(2));
         if (component.return_air_temperature != nullptr)
         {
-          component.return_air_temperature->publish_state(decode_temperature(component.payload_byte(2)));
+          component.return_air_temperature->publish_state(status_return_air);
         }
+        component.current_temperature = status_return_air;
+        component.publish_state();
         if (component.exhaust_air_temperature != nullptr)
         {
           component.exhaust_air_temperature->publish_state(decode_temperature(component.payload_byte(3)));
@@ -58,8 +62,8 @@ namespace esphome
           return false;
         }
 
+        // COMFOAIR_CLIMATE_TEMP_FIX_V1: do not publish Climate before reading return air.
         component.target_temperature = decode_temperature(component.payload_byte(0));
-        component.publish_state();
 
         const uint8_t present{component.payload_byte(TEMPERATURES_IDX_PRESENCE)};
 
@@ -96,6 +100,8 @@ namespace esphome
         {
           component.kitchen_hood_temperature->publish_state(decode_temperature(component.payload_byte(8)));
         }
+        // COMFOAIR_CLIMATE_TEMP_FIX_V1: publish after current_temperature update.
+        component.publish_state();
         return true;
       }
 
