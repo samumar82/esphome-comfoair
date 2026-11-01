@@ -18,16 +18,15 @@ This documents the installation on which the bidirectional bridge was tested, **
 ## Logical connections
 
 ```text
-ComfoAir 180 RS232     RS232↔TTL #1        ESP32
-Unit TX ────────────── RS232 RX   TTL TX ── GPIO16 RX
-Unit RX ────────────── RS232 TX   TTL RX ── GPIO17 TX
+COMFOAIR 180 (machine UART)
+  ComfoAir TX → RS232 receiver → TTL output → ESP32 GPIO16 (RX)
+  ESP32 GPIO17 (TX) → TTL input → RS232 transmitter → ComfoAir RX
 
-ComfoSense RS232       RS232↔TTL #2        ESP32
-Panel TX ───────────── RS232 RX   TTL TX ── GPIO25 RX
-Panel RX ───────────── RS232 TX   TTL RX ── GPIO26 TX
+COMFOSENSE (panel UART)
+  ComfoSense TX → RS232 receiver → TTL output → ESP32 GPIO25 (RX)
+  ESP32 GPIO26 (TX) → TTL input → RS232 transmitter → ComfoSense RX
 
-Power → properly rated regulated 5 V input → ESP32
-Grounding/shielding → consult the exact transceiver board & ComfoAir documentation
+Power: suitable low-voltage feed → correctly rated regulator → ESP32.
 ```
 
 **Pin-name warning:** different MAX3232 boards label their TTL pins differently. The important verified firmware mapping is `GPIO17/16` for the machine and `GPIO26/25` for the panel. Check actual signal direction before wiring.
