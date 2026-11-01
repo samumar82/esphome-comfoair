@@ -39,3 +39,12 @@ build/
 # OS-specific
 .DS_Store
 Thumbs.db
+
+# Personal configuration and device secrets
+secrets.yaml
+**/secrets.yaml
+*.env
+*.env.local
+*backup*/
+**/*backup*/
+*trace*.txt
