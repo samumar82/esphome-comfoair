@@ -1,105 +1,132 @@
-![ComfoAir Controller Banner](images/banner.png)
+# ComfoAir 180 + ComfoSense + Home Assistant
+## The ESP32 bidirectional bridge
 
-[![GPLv3 License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Get Hardware](https://img.shields.io/badge/Shop-Get_Plug--'n--Play_Solution-8A2BE2)](https://shop.svenar.nl)
+**Keep your original ComfoSense wall controller. Add full Home Assistant control. Keep both in sync.**
 
-ESPHome-powered controller for Zehnder WHR / CA ventilation units that integrate seamlessly with Home Assistant.
+This project documents my working ESP32-based integration for the **Zehnder ComfoAir 180** ventilation unit and its original **ComfoSense** control panel.
 
----
+The key feature is **a true two-way serial bridge**, rather than simply replacing the physical controller with Home Assistant:
 
-![Features](images/features.png)
+- **Change ventilation speed on ComfoSense** → ComfoAir 180 responds → **Home Assistant updates**.
+- **Change ventilation speed in Home Assistant** → ComfoAir 180 responds → **ComfoSense display updates too**, without touching the panel.
+- In my installation, the panel typically reflects Home Assistant changes in **about 4–5 seconds**.
 
-- **Comprehensive Climate Control**
-  - 📊 Real-time fan speed monitoring
-  - 🌡️ Multi-zone temperature tracking (Supply/Return/Exhaust/Outdoor)
-  - ⚙️ Bypass & preheating status visualization
-  - ↕️ Set ventilation level (Absent(Off) / Low / Medium / High)
-  - 🌀 Set ventilation speed per level
-  - ❄️ Frost protection monitoring
-  - ⏲️ Operation hour tracking
-  - 🏠 Home Assistant climate entity support
-  - 🔄 Automatic firmware updates (Using ESPHome-builder)
-  - ... and more
+> **Tested in a real installation:** Zehnder ComfoAir **180**, ComfoSense, ESP32-WROOM-32D, ESPHome **2026.6.5**. Compatibility with other units or panels has not yet been validated for this combined bridge.
 
 ---
 
-![Supported Devices](images/supported_devices.png)
+## Why I built it
 
-## ComfoAir Series
-__Using:__ `comfoair_ca.yaml`
-- Zehnder WHR 920
-- Zehnder WHR 930
-- Zehnder WHR 950
-- Zehnder WHR 960
-- Zehnder ComfoAir 160
-- Zehnder ComfoAir 200
-- Zehnder ComfoAir 350
-- Zehnder ComfoAir 500
-- Zehnder ComfoAir 550
+I wanted the **best of both worlds**: keep the reliable, familiar **ComfoSense** controller on the wall, while exposing the ComfoAir 180 to Home Assistant for monitoring, control and automations.
 
-## ComfoD Series
-__Using:__ `comfoair_ca.yaml`
-- Zehnder ComfoD 250
-- Zehnder ComfoD 300
-- Zehnder ComfoD 350
-- Zehnder ComfoD 450
-- Zehnder ComfoD 550
+Simply controlling fan speed from Home Assistant was not enough. The original panel needed to **stay aware of changes made from Home Assistant**, and a speed change on ComfoSense also needed to appear correctly in HA.
 
-## ComfoAir Q Series
-__Using:__ `comfoair_q.yaml`
-- Zehnder ComfoAir Q350
-- Zehnder ComfoAir Q450
-- Zehnder ComfoAir Q600
+This was the missing piece — and the main reason for this project.
 
----
+## How the bridge works
 
-![Hardware](images/hardware.png)
+```text
+                              HOME ASSISTANT
+                           Fan control • Sensors
+                             Climate • Automations
+                                    │
+                              ESPHome native API
+                                    │
+                              Wi-Fi connection
+                                    │
+                           ┌──────────────────┐
+                           │ ESP32-WROOM-32D  │
+                           │                  │
+                           │  Svenar ESPHome  │
+                           │  ComfoAir driver │
+                           │        +         │
+                           │ ComfoSense UART  │
+                           │  bridge / proxy  │
+                           └──────┬─────┬─────┘
+                                  │     │
+                          UART 1  │     │  UART 2
+                                  │     │
+                       MAX3232    │     │    MAX3232
+                                  │     │
+                         ┌────────┘     └─────────┐
+                         │                        │
+                  ZEHNDER COMFOAIR 180      COMFOSENSE
+                    Ventilation unit       Original wall panel
 
-Recommended hardware:
-* ESP32 board
-  * MAX3232 board for ComfoAir and ComfoD devices
-  * SN65HVD230 board for ComfoAir Q devices
-* 12V -> 3.3V converter (to power the ESP32 from the ComfoAir devices)
-
-For plug-and-play solutions, visit [shop.svenar.nl](https://shop.svenar.nl)
-
----
-
-![Build & Deploy](images/build_and_deploy.png)
-
-## Using ESPHome CLI
-
-https://esphome.io/guides/cli.html
-
-### ComfoAir
-
-```sh
-$ esphome build comfoair_ca.yaml
-$ esphome upload comfoair_ca.yaml
+        Home Assistant ↔ ESP32 ↔ ComfoAir ↔ ESP32 ↔ ComfoSense
+                  Two-way fan-speed synchronization
 ```
 
-### ComfoAir Q
+The ESP32 connects to **two independent serial interfaces**. It speaks to the ventilation unit using the modern ComfoAir ESPHome component and proxies the original ComfoSense communication, coordinating both traffic streams.
 
-```sh
-$ esphome build comfoair_q.yaml
-$ esphome upload comfoair_q.yaml
-```
+### The essential synchronization fix
 
-## Using ESPHome-builder
+During development, **ComfoSense → Home Assistant** already worked, while **Home Assistant → ComfoSense** did *not*: the ventilation unit changed speed, but the wall panel display remained unchanged.
 
-https://esphome.io/guides/getting_started_hassio.html
+The working solution was to forward **complete, validated response frames** back to ComfoSense, following the approach used by Julianpas, rather than forwarding serial data byte by byte.
 
-1. Install the __ESPHome-builder__ add-on inside Home Assistant
-2. Add the `comfoair_ca.yaml` or `comfoair_q.yaml` config
-3. Build and upload
+**Result:** both controllers now work together, with the physical panel updating after changes made in Home Assistant.
+
+## My real hardware setup
+
+| Component | My configuration |
+|---|---|
+| Ventilation unit | **Zehnder ComfoAir 180** |
+| Physical controller | **Original Zehnder ComfoSense** — retained and fully usable |
+| ESP32 board | **ESP32-WROOM-32D** |
+| Serial level conversion | **MAX3232-based RS232 ↔ TTL converters** for both interfaces |
+| ComfoAir UART | **ESP32 RX GPIO16 / TX GPIO17** |
+| ComfoSense UART | **ESP32 RX GPIO25 / TX GPIO26** |
+| UART speed | **9600 baud** |
+| Power | ComfoAir 12 V supply → regulated ~5 V step-down → ESP32 5 V input |
+| Software | **ESPHome 2026.6.5** (ESP-IDF) |
+| Integration | **Home Assistant via native ESPHome API** |
+
+> **Important electrical warning:** use proper RS232-to-3.3 V TTL level conversion; never attach RS232 voltages directly to ESP32 GPIO pins. Check your converter's TX/RX labeling and power requirements — module pin labels are not standardized. The wiring above describes **my tested setup**, not a universal Zehnder pinout.
+
+## What works on my ComfoAir 180
+
+| Function | Verified behavior |
+|---|---|
+| ComfoSense → ComfoAir | ✅ Original panel controls ventilation speed |
+| ComfoSense → Home Assistant | ✅ HA reflects fan-speed changes |
+| Home Assistant → ComfoAir | ✅ HA controls ventilation speed |
+| Home Assistant → ComfoSense | ✅ Original panel display follows HA changes |
+| Panel update time | Typically **4–5 seconds** |
+| Temperature sensors | ✅ Outdoor, supply, return and exhaust |
+| Home Assistant Climate entity | ✅ Current temperature and comfort setpoint are separate |
+| Current Climate temperature | ✅ Uses the **return-air temperature** (e.g. 21 °C) |
+| Comfort temperature setpoint | ✅ Remains independent (e.g. 23 °C) |
+| No enthalpy option installed | ✅ Avoids a misleading `-20 °C` reading |
+| Preheating indication | ✅ No spurious on/off oscillation observed |
+
+The rest of Svenar's ComfoAir monitoring and controls remain part of the integration, including ventilation levels, bypass, fan speed, operating hours and other supported values.
+
+## Device compatibility
+
+**Confirmed on this combined bridge implementation:**
+- **Zehnder ComfoAir 180 + ComfoSense** — working installation.
+
+Svenar's upstream repository lists additional ComfoAir, ComfoD, WHR and ComfoAir Q models. **That does not mean this two-UART ComfoSense bridge has been tested on all of them.** Other owners are welcome to report successful or unsuccessful combinations.
+
+## Source code and installation status
+
+> **Important:** this fork currently contains Svenar's upstream repository. The **final modified source code and configuration of my working two-UART bridge have not yet been pushed to this GitHub repository**. The README describes a real, verified installation, but **cloning the repository as it stands does not yet reproduce the combined bridge**.
+
+The working build is based on Svenar's `comfoair_ca` component plus the ComfoSense UART proxy and fixes described above. The release is ready to be documented here, but the exact locally tested `components/comfoair_ca/` and corresponding ESPHome bridge YAML must be committed before publishing an installation guide or release.
+
+**Please do not flash the current repository expecting the bidirectional bridge until the source upload is complete.**
+
+## Credits
+
+This project combines and builds upon excellent open-source work:
+
+- **[Svenar — esphome-comfoair](https://github.com/svenar-iot/esphome-comfoair):** the modern ESPHome ComfoAir integration, sensors and Climate controls.
+- **[Julianpas — esphome-comfoair](https://github.com/julianpas/esphome-comfoair):** the reference ComfoSense proxy and the complete-frame forwarding behavior essential to this bridge.
+- **[Wichers — esphome-comfoair](https://github.com/wichers/esphome-comfoair):** the original project lineage of the Julianpas fork.
+
+This repository is a **community fork of Svenar**, and is not affiliated with Zehnder or the upstream authors. Source code remains under the **[GNU GPL v3.0](LICENSE)** license, with the original authors and notices retained.
 
 ---
 
-![Credits](images/credits.png)
-
-This project builds upon the foundational work by [Wichers](https://github.com/wichers/esphome-comfoair) and [yoziru](https://github.com/yoziru/esphome-zehnder-comfoair).
-
----
-
-![License](images/license.png)
-
-**License**: GNU General Public License v3.0 - See [LICENSE](LICENSE) for details.
+**The goal:** one ComfoAir 180, two fully usable control interfaces — **ComfoSense on the wall and Home Assistant in the smart home**, kept in sync by a single ESP32 bridge.
