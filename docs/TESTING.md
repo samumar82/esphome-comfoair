@@ -23,4 +23,4 @@
 
 ## Evidence boundary
 
-The assembled firmware used in the real installation **was compiled on its owner's Windows PC**. The public repository was reproduced from that patched source workflow and must still pass a **fresh independent repository build**. Until then, do not treat the repository itself as an independently verified binary release.
+The assembled firmware used in the real installation **was compiled on its owner's Windows PC**. This public fork was reconstructed from that patched source workflow and passed a **fresh ESPHome 2026.6.5 configuration validation and firmware compilation on GitHub Actions** ([successful build](https://github.com/samumar82/esphome-comfoair/actions/runs/41348538276)). Pylint also passed ([run](https://github.com/samumar82/esphome-comfoair/actions/runs/41348762959)). The public source has **not** been byte-compared to the Windows PC's final build; no new physical-device flash has been performed from the repository.
