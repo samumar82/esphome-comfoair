@@ -46,6 +46,9 @@ namespace esphome
     {
       climate::ClimateTraits traits{};
 
+      // COMFOAIR_CLIMATE_CURRENT_TEMP_FEATURE_V2: ESPHome API requires this flag.
+      traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
+
       traits.set_supported_modes({climate::CLIMATE_MODE_FAN_ONLY});
       traits.set_supported_presets({climate::CLIMATE_PRESET_HOME});
 
