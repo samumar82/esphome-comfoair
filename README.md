@@ -109,13 +109,27 @@ The rest of Svenar's ComfoAir monitoring and controls remain part of the integra
 
 Svenar's upstream repository lists additional ComfoAir, ComfoD, WHR and ComfoAir Q models. **That does not mean this two-UART ComfoSense bridge has been tested on all of them.** Other owners are welcome to report successful or unsuccessful combinations.
 
-## Source code and installation status
+## Installation: the complete ComfoSense bridge
 
-> **Important:** this fork currently contains Svenar's upstream repository. The **final modified source code and configuration of my working two-UART bridge have not yet been pushed to this GitHub repository**. The README describes a real, verified installation, but **cloning the repository as it stands does not yet reproduce the combined bridge**.
+**The bidirectional proxy source and ESPHome configuration are included in this fork.** Use:
 
-The working build is based on Svenar's `comfoair_ca` component plus the ComfoSense UART proxy and fixes described above. The release is ready to be documented here, but the exact locally tested `components/comfoair_ca/` and corresponding ESPHome bridge YAML must be committed before publishing an installation guide or release.
+- [`comfoair_svenar_proxy.yaml`](comfoair_svenar_proxy.yaml) — complete two-UART configuration, including all Svenar climate and monitoring entities.
+- [`components/comfoair_ca/`](components/comfoair_ca/) — patched Svenar component, the `comfosense_bridge.h` proxy and all sensor fixes.
+- [`secrets.example.yaml`](secrets.example.yaml) — placeholder file to copy privately as `secrets.yaml`.
 
-**Please do not flash the current repository expecting the bidirectional bridge until the source upload is complete.**
+```powershell
+# With ESPHome 2026.6.5 installed, from the cloned repository root:
+Copy-Item .\secrets.example.yaml .\secrets.yaml
+# Edit secrets.yaml with your personal credentials (never commit it).
+py -3 -m esphome config .\comfoair_svenar_proxy.yaml
+py -3 -m esphome compile .\comfoair_svenar_proxy.yaml
+```
+
+The upstream `comfoair_ca.yaml` is preserved but **does not enable the ComfoSense bridge**. Do not use it for a two-UART installation.
+
+Read the [installation guide](docs/INSTALLATION.md), [hardware notes](docs/HARDWARE.md), [architecture](docs/ARCHITECTURE.md), [regression tests](docs/TESTING.md), and [security notes](SECURITY.md) before flashing.
+
+**Verification status:** the patch sequence and behavior were proven on the owner's real ComfoAir 180. The source published here has been reconstructed from those patch scripts and upstream files; the public repository itself still needs a fresh independent compile and confirmation against the final PC build. Until then, treat this as a source beta rather than a certified firmware binary.
 
 ## Credits
 
