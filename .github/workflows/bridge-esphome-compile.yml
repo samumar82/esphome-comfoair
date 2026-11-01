@@ -1,0 +1,51 @@
+name: Build ComfoAir 180 / ComfoSense bridge
+
+on:
+  push:
+    paths:
+      - "components/comfoair_ca/**"
+      - "comfoair_svenar_proxy.yaml"
+      - "secrets.example.yaml"
+      - ".github/workflows/bridge-esphome-compile.yml"
+  pull_request:
+    paths:
+      - "components/comfoair_ca/**"
+      - "comfoair_svenar_proxy.yaml"
+      - "secrets.example.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-esphome:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install exact ESPHome version tested on hardware
+        run: python -m pip install "esphome==2026.6.5"
+
+      - name: Create CI-only placeholders (no real credentials)
+        run: cp secrets.example.yaml secrets.yaml
+
+      - name: Validate public bridge configuration
+        run: python -m esphome config comfoair_svenar_proxy.yaml
+
+      - name: Compile two-UART firmware
+        run: python -m esphome compile comfoair_svenar_proxy.yaml
+
+      - name: Assert expected patched-source markers are present
+        run: |
+          grep -q "COMFOSENSE_JULIAN_FRAME_SYNC_V1" components/comfoair_ca/comfosense_bridge.h
+          grep -q "COMFOAIR_CLIMATE_CURRENT_TEMP_FEATURE_V2" components/comfoair_ca/climate.cpp
+          grep -q "COMFOAIR_CLIMATE_TEMP_FIX_V1" components/comfoair_ca/parse_temperatures.cpp
+          grep -q "COMFOSENSE_SYNC_SENSOR_FIX_V1" components/comfoair_ca/parse_status.cpp
