@@ -4,6 +4,7 @@
 #include "comfoair.h"
 
 #include <array>
+#include <limits>
 
 namespace esphome
 {
@@ -144,9 +145,17 @@ namespace esphome
           }
         }
 
+        // COMFOSENSE_SYNC_SENSOR_FIX_V1: protocol capability, not a temperature.
+        component.enthalpy_installed_ = component.payload_byte(STATUS_IDX_ENTHALPY) != 0;
+        component.enthalpy_presence_known_ = true;
         if (component.enthalpy_present != nullptr)
         {
-          component.enthalpy_present->publish_state(component.payload_byte(STATUS_IDX_ENTHALPY) != 0);
+          component.enthalpy_present->publish_state(component.enthalpy_installed_);
+        }
+        if (!component.enthalpy_installed_ && component.enthalpy_temperature != nullptr)
+        {
+          // Clear the stale -20C state instead of inventing a physical sensor.
+          component.enthalpy_temperature->publish_state(std::numeric_limits<float>::quiet_NaN());
         }
         if (component.ewt_present != nullptr)
         {
