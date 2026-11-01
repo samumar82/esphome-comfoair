@@ -27,10 +27,9 @@ namespace esphome
         {
           component.bypass_valve_open->publish_state(component.payload_byte(0) != 0);
         }
-        if (component.preheating_state != nullptr)
-        {
-          component.preheating_state->publish_state(component.payload_byte(1) != 0);
-        }
+        // COMFOSENSE_SYNC_SENSOR_FIX_V1: byte 1 here is valve position,
+        // and 2 means unknown. Do not mix it with preheating active state
+        // from RES_GET_PREHEATING_STATUS byte 2.
         if (component.motor_current_bypass != nullptr)
         {
           component.motor_current_bypass->publish_state(component.payload_byte(2));
