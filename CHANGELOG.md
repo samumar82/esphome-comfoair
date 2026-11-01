@@ -12,4 +12,4 @@
 - Added `CLIMATE_SUPPORTS_CURRENT_TEMPERATURE`, required by ESPHome 2026.6.5 to send that value through the native API.
 - Added standalone local-component ESPHome YAML, setup documentation and no-secret placeholders.
 
-**Testing:** working on a real ComfoAir 180 installation with ESPHome 2026.6.5 and ComfoSense. The public repository sources were reconstructed from the patch sequence used for that installation; a clean independent build of this repository has not yet been confirmed.
+**Testing:** working on a real ComfoAir 180 installation with ESPHome 2026.6.5 and ComfoSense. The public repository sources were reconstructed from the patch sequence used for that installation. A clean ESPHome 2026.6.5 configuration validation and firmware compilation **passed on GitHub Actions** (run 41348538276). A byte-for-byte comparison with the final Windows build has not been performed.
