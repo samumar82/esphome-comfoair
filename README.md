@@ -1,4 +1,7 @@
 # ComfoAir 180 + ComfoSense + Home Assistant
+
+[![ESPHome 2026.6.5 build](https://github.com/samumar82/esphome-comfoair/actions/workflows/bridge-esphome-compile.yml/badge.svg)](https://github.com/samumar82/esphome-comfoair/actions/workflows/bridge-esphome-compile.yml)
+[![Python lint](https://github.com/samumar82/esphome-comfoair/actions/workflows/pylint.yml/badge.svg)](https://github.com/samumar82/esphome-comfoair/actions/workflows/pylint.yml)
 ## The ESP32 bidirectional bridge
 
 **Keep your original ComfoSense wall controller. Add full Home Assistant control. Keep both in sync.**
@@ -129,7 +132,7 @@ The upstream `comfoair_ca.yaml` is preserved but **does not enable the ComfoSens
 
 Read the [installation guide](docs/INSTALLATION.md), [hardware notes](docs/HARDWARE.md), [architecture](docs/ARCHITECTURE.md), [regression tests](docs/TESTING.md), and [security notes](SECURITY.md) before flashing.
 
-**Verification status:** the patch sequence and behavior were proven on the owner's real ComfoAir 180. The source published here has been reconstructed from those patch scripts and upstream files; the public repository itself still needs a fresh independent compile and confirmation against the final PC build. Until then, treat this as a source beta rather than a certified firmware binary.
+**Verification status:** the patch sequence and behavior were proven on the owner's real ComfoAir 180. This fork was reconstructed from those patch scripts and upstream files. A **clean ESPHome 2026.6.5 configuration validation and firmware compilation passed on GitHub Actions** ([build run](https://github.com/samumar82/esphome-comfoair/actions/runs/41348538276)). The repository is still a community beta, not a certified firmware binary, and a byte-for-byte comparison with the owner's final Windows build has not been performed.
 
 ## Credits
 
