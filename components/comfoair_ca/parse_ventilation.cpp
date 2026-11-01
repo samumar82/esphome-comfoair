@@ -47,7 +47,8 @@ namespace esphome
                    static_cast<int>(SENSOR_DATA_MIN_SIZE), static_cast<int>(length));
           return false;
         }
-        if (component.enthalpy_temperature != nullptr)
+        // COMFOSENSE_SYNC_SENSOR_FIX_V1: 0x00 can mean not installed (-20C).
+        if (component.enthalpy_temperature != nullptr && component.enthalpy_presence_known_ && component.enthalpy_installed_)
         {
           component.enthalpy_temperature->publish_state(
               (static_cast<float>(component.payload_byte(0)) / TEMPERATURE_DIVISOR) - TEMPERATURE_OFFSET);
