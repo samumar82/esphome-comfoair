@@ -22,6 +22,7 @@
 #include "rpm_filter.h"
 #include "logger.h"
 #include "registers.h"
+#include "comfosense_bridge.h"
 
 namespace esphome
 {
@@ -70,6 +71,7 @@ namespace esphome
         name_ = value;
       }
       void set_uart_component(uart::UARTComponent *parent) { set_uart_parent(parent); }
+      void set_proxy_uart_component(uart::UARTComponent *parent) { proxy_.set_proxy_uart_component(parent); }
 
       void set_developer_mode(LogLevel level);
       LogLevel get_developer_mode() const { return logLevel; }
@@ -297,6 +299,7 @@ namespace esphome
       std::string filter_ascii(const char *input) const;
       void refresh_ventilation_levels();
 
+      ComfoSenseBridge proxy_{};
       uint8_t data_[COMMAND_MAX_LENGTH]{};
       std::size_t data_index_{0};
       bool skip_escaped_07_{false};
@@ -327,6 +330,9 @@ namespace esphome
       uint8_t exhaust_high_{0};
       uint8_t unused_byte_{0};
       bool can_send_ventilation_levels_{false};
+      // COMFOSENSE_SYNC_SENSOR_FIX_V1
+      bool enthalpy_presence_known_{false};
+      bool enthalpy_installed_{false};
 
       MedianFilter3 intake_rpm_filter{};
       MedianFilter3 exhaust_rpm_filter{};
