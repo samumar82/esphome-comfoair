@@ -31,7 +31,7 @@ esphome:
   name_add_mac_suffix: false
   project:
     name: "community.comfoair_bridge"
-    version: 0.1.0
+    version: 0.1.1
 
 external_components:
   - source:
