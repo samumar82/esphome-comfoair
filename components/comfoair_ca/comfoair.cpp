@@ -210,14 +210,6 @@ namespace esphome
       case ByteVerdict::Complete:
         if (data_[COMMAND_ID_ACK] != FRAME_ACK)
         {
-          // COMFOSENSE_TRACE_V1: machine response summary; passive diagnostics.
-          char frame_hex[3 * 24 + 1]{};
-          const size_t n = (data_index_ + 1 < 24) ? data_index_ + 1 : 24;
-          for (size_t i = 0; i < n; ++i) {
-            snprintf(frame_hex + (i * 3), sizeof(frame_hex) - i * 3, "%02X ", data_[i]);
-          }
-          ESP_LOGI("comfosense_trace", "UNIT->PANEL cmd=0x%02X head=%s",
-                   data_[COMMAND_IDX_MSG_ID], frame_hex);
           if (logLevel >= LogLevel::Verbose)
           {
             raw_trace_dump("");
@@ -324,11 +316,6 @@ namespace esphome
     void ComfoAirComponent::write_command(uint8_t command, const uint8_t *payload,
                                           uint8_t payload_length)
     {
-      // COMFOSENSE_TRACE_V1: local speed commands (HA, automation, buttons).
-      if (command == CMD_SET_LEVEL) {
-        ESP_LOGI("comfosense_trace", "LOCAL->UNIT speed_cmd=0x%02X level=%u",
-                 command, static_cast<unsigned>(payload && payload_length ? payload[0] : 255));
-      }
       last_command_ = command;
       last_payload_length_ = 0;
       if (payload != nullptr && payload_length > 0 && payload_length <= COMMAND_MAX_LENGTH)
