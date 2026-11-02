@@ -49,3 +49,9 @@ jobs:
           grep -q "COMFOAIR_CLIMATE_CURRENT_TEMP_FEATURE_V2" components/comfoair_ca/climate.cpp
           grep -q "COMFOAIR_CLIMATE_TEMP_FIX_V1" components/comfoair_ca/parse_temperatures.cpp
           grep -q "COMFOSENSE_SYNC_SENSOR_FIX_V1" components/comfoair_ca/parse_status.cpp
+
+      - name: Ensure production sources do not include bring-up serial traces
+        run: |
+          ! grep -R -n "comfosense_trace" components/comfoair_ca/
+          grep -q "level: WARN" comfoair_svenar_proxy.yaml
+          grep -q "COMFOSENSE_JULIAN_FRAME_SYNC_V1" components/comfoair_ca/comfosense_bridge.h
