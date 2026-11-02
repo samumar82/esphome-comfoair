@@ -105,6 +105,19 @@ The working solution was to forward **complete, validated response frames** back
 
 The rest of Svenar's ComfoAir monitoring and controls remain part of the integration, including ventilation levels, bypass, fan speed, operating hours and other supported values.
 
+## Production-quiet profile (HA-friendly)
+
+The default bridge profile is intentionally quiet while preserving existing controls:
+
+- Raw `comfosense_trace` logging was **removed from the compiled C++ sources**. Normal serial frame forwarding, checksum validation, arbitration and panel synchronization are unchanged.
+- ESPHome logger uses `WARN` and disables UART0 console output; warnings and errors remain available through ESPHome logging. This does **not** change the two 9600-baud device UARTs.
+- Wi-Fi, uptime and ESPHome version appear as **diagnostic** entities, rather than regular operating controls.
+- The optional Developer Mode select is a **disabled-by-default diagnostic** HA entity, not deleted.
+- The eight rarely changed ventilation-level calibration numbers are marked **configuration** entities and update every **30 seconds** instead of 5; manual changes might take up to 30 s to appear in HA.
+- Fan speed, Climate, temperature measurements, the physical ComfoSense panel, API, OTA and the web server retain their existing functions and polling.
+
+**Rollout caution:** the previous on-device firmware is still the proven baseline. CI only verifies that the optimized firmware compiles; after a new OTA installation, confirm both directions on the **actual ComfoSense display** and make sure no `COMM ERROR` appears.
+
 ## Device compatibility
 
 **Confirmed on this combined bridge implementation:**
