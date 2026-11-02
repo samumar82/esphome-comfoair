@@ -30,3 +30,11 @@ Use [TESTING.md](TESTING.md). Verify the real ComfoSense display, not merely HA'
 ## Credentials and local security
 
 The baseline uses secret placeholders for Wi-Fi, fallback access point and OTA password. See [../SECURITY.md](../SECURITY.md) before deployment. API encryption is not enabled in the sample; use a trusted LAN or secure it for your environment.
+
+## Quiet production configuration
+
+The default `comfoair_svenar_proxy.yaml` uses `logger.level: WARN`, with UART0 console disabled. The physical ComfoAir and ComfoSense serial links remain at 9600 baud on their original pins.
+
+Home Assistant groups uptime/Wi-Fi/version as diagnostic. The optional Developer Mode entity is disabled by default. Eight ventilation calibration numbers appear as configuration entities with 30-second refreshes. Changing the displayed number may be delayed; this is **not** the same as the ventilation fan speed command latency.
+
+The independent production CI build is mandatory before trying this version on a real unit. Preserve a known-good firmware backup and do not change the wiring.
