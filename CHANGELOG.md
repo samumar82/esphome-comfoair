@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1-beta — quiet profile (2026-11-02)
+
+- Removed always-on UART frame hex logging introduced for bring-up.
+- Kept essential warnings and errors; reduced logger severity to WARN and disabled UART0 console.
+- Classified diagnostics and calibration values in the Home Assistant device.
+- Reduced eight slow-changing configuration number polling intervals from 5 to 30 seconds.
+- Kept full-frame ComfoSense synchronization, fan controls, Climate, sensors and both UART configurations unchanged.
+- Updated GitHub Actions to reject accidental reintroduction of always-on serial traces.
+- Pending real-device validation of this release; keep the previously working firmware backed up.
+
 ## 0.1.0-beta — 2026-11-01
 
 - Created a two-UART bidirectional **ComfoAir 180 ↔ ESP32 ↔ ComfoSense** bridge with Home Assistant support.
