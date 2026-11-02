@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <cstdio>
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/log.h"
 #include "frame.h"
@@ -141,17 +140,6 @@ class ComfoSenseBridge {
   void reset_partial_() { partial_ = Collector{}; }
 
   void enqueue_complete_() {
-    // COMFOSENSE_TRACE_V1: observe completed panel frames; never change traffic.
-    if (partial_.raw_len >= 6) {
-      char hex[3 * 24 + 1]{};
-      size_t n = partial_.raw_len < 24 ? partial_.raw_len : 24;
-      for (size_t i = 0; i < n; ++i) {
-        snprintf(hex + (i * 3), sizeof(hex) - i * 3, "%02X ", partial_.raw[i]);
-      }
-      ESP_LOGI("comfosense_trace", "PANEL->UNIT cmd=0x%02X bytes=%u head=%s",
-               partial_.normalized[COMMAND_IDX_MSG_ID],
-               static_cast<unsigned>(partial_.raw_len), hex);
-    }
     if (count_ >= QUEUE_DEPTH) {
       ESP_LOGW("comfosense_proxy", "Panel command queue full: frame dropped");
     } else {
